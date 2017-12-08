@@ -3,7 +3,7 @@ import tkinter.filedialog as Tkinter
 import os.path
 import codecs as loscodecs
 
-def ConseguirEntradaSalida():
+def ConseguirStubs():
     archivoTXT = Tkinter.askopenfilename(initialdir = "C:/Users/IBM_ADMIN/Desktop/archivosLaYessenia/",
                                          title = "Archivos TXT")
     archivo = loscodecs.open(archivoTXT, "r")
@@ -25,9 +25,9 @@ def ConseguirEntradaSalida():
     print(dicProgramasStubs)
     archivo.close()
 
-    InsertarEntradaSalida(dicProgramasStubs)
+    InsertarStubs(dicProgramasStubs)
 
-def InsertarEntradaSalida(programas):
+def InsertarStubs(programas):
     # Seleccionar el Excel a usar
     archivo = Tkinter.askopenfilename(initialdir = "C:/Users/IBM_ADMIN/PycharmProjects/laYesseniaDemo/", title = "Archivo Excel")
 
@@ -43,21 +43,77 @@ def InsertarEntradaSalida(programas):
                 stubs = "G" + str(cell.row)
                 print(stubs, programasKeys)
                 sheet[stubs] = programasKeys
-                '''
-                for valores in programas[cell.value]:
-                    print("     ", valores)
-                    if valores[:5] == 'ktoli':
-                        entrada = "H" + str(cell.row)
-                        sheet[entrada] = "Hola"
-                        print(entrada)
-                    elif valores[:5] == 'ktolv':
-                        salida = "I" + str(cell.row)
-                        print(salida)
-                        sheet[salida] = "Mundo"
-                        
-                '''
 
     workbook.save("lonotarteamiymetiraspasando.xlsm")
 
+def ConseguirEntradaSalida():
+    archivoTXT = Tkinter.askopenfilename(initialdir = "C:/Users/IBM_ADMIN/Desktop/archivosLaYessenia/",
+                                         title = "Archivos TXT")
+    archivo = loscodecs.open(archivoTXT, "r")
+    dicEntradaSalida = {}
+
+    key = ""
+    value = []
+
+    for linea in archivo:
+        lineaStrip = linea.strip()
+
+        if lineaStrip == "":
+            if key != "":
+                InsertarEntradaSalida(dicEntradaSalida)
+
+            dicEntradaSalida.clear()
+            key = ""
+            value.clear()
+
+        elif lineaStrip[:13] == "StubEntrada: ":
+            value.append(lineaStrip[13:])
+
+        elif lineaStrip[:12] == "StubSalida: ":
+            value.append(lineaStrip[12:])
+
+        elif lineaStrip[:6] == "Stub: ":
+            key = (lineaStrip[6:])
+
+        dicEntradaSalida[key] = value
+
+    archivo.close()
+
+def InsertarEntradaSalida(dicEntradaSalida):
+    workbook = openpyxl.load_workbook("Modulo_de_Aplicacion_Tesoreria-Operativa_Terminado.xlsm")
+    sheet = workbook["BD_Tesoreria"]
+    listAyuda = []
+
+    for row in sheet.iter_cols(min_row = 1, min_col = 1, max_row = 4125, max_col = 11):
+        for cell in row:
+            entradaSalida = str(cell.value)
+            if entradaSalida in dicEntradaSalida.keys():
+                entrada = "H" + str(cell.row)
+                salida = "I" + str(cell.row)
+
+                for valores in dicEntradaSalida[entradaSalida]:
+                    celdaEntrada = sheet[entrada]
+                    #sheet[salida] = valores
+
+
+                #for valores in dicEntradaSalida[cell.value]:
+                    #print(valores)
+                '''
+                    if valores[:5] == 'Ktoli':
+                        Ktoli = valores[:5]
+                        entrada = "H" + str(cell.row)
+                        print(entrada, dicEntradaSalida)
+                            #if valores2.startswith(Ktoli):
+                                #print(entrada, ": ", dicEntradaSalida[Ktoli])
+                       #sheet[entrada] = entradaSalidaValores
+                    elif valores[:5] == 'ktolv':
+                        ktolv = valores[:5]
+                        salida = "I" + str(cell.row)
+                        print(entradaSalidaValores[ktolv])
+                        #sheet[salida] = entradaSalidaValores
+                    '''
+
+    workbook.save("lonotarteamiymetiraspasando2.xlsx")
+
 ConseguirEntradaSalida()
-#InsertarEntradaSalida()
+#ConseguirStubs()
